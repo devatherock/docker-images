@@ -1,0 +1,84 @@
+docker_image: &docker_image
+  docker:
+    - image: docker:19.03.6
+
+slack_image: &slack_image
+  docker:
+    - image: devatherock/simple-slack:0.4.0
+
+work_directory: &work_directory
+  working_directory: ~/docker-images
+
+resource_class: &resource_class
+  resource_class: small
+
+version: 2.1
+jobs:
+  dry_run_java_with_docker:
+    <<: *docker_image
+    <<: *resource_class
+    <<: *work_directory
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker build -f java-with-docker/Dockerfile .
+
+  java_with_docker:
+    <<: *docker_image
+    <<: *resource_class
+    <<: *work_directory
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/docker-images
+      - run: |
+          TAG=adoptopenjdk-11
+          docker build -t devatherock/java-with-docker:$TAG -f java-with-docker/Dockerfile .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/java-with-docker:$TAG    
+
+  notify_success:
+    <<: *slack_image
+    <<: *resource_class
+    environment:
+      TEXT: "Success: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+      COLOR: "#33ad7f"
+      CHANNEL: general
+      TITLE: "Build completed"
+    steps:
+      - run: /bin/simpleslack
+    notify_failure:
+      <<: *slack_image
+      <<: *resource_class
+      environment:
+        TEXT: "Failure: {{.CircleBuildUrl}} by {{.CircleUsername}}"
+        COLOR: "#a1040c"
+        CHANNEL: general
+        TITLE: "Build completed"
+      steps:
+        - run:
+            name: Failure notification
+            command: /bin/simpleslack
+            when: on_fail
+
+workflows:
+  version: 2.1
+  build_publish:
+    jobs:
+      - java_with_docker:
+          filters:
+            branches:
+              only: master
+      - notify_success:
+          requires:
+            - java_with_docker
+      - notify_failure:
+          requires:
+            - java_with_docker
+  pr_check:
+    jobs:
+      - dry_run_java_with_docker:
+          filters:
+            branches:
+              ignore: master
