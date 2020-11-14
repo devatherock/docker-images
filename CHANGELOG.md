@@ -1,5 +1,9 @@
 # Changelog
 
+## 2020-11-14
+### Added
+- `shasum` to `devatherock/graalvm`
+
 ## 2020-11-13
 ### Added
 - `devatherock/graalvm` containing graalvm, `native-image` and `git`
