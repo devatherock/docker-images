@@ -56,7 +56,7 @@ jobs:
       - attach_workspace:
           at: ~/docker-images
       - run: |
-          TAG=20.2.0-java11
+          TAG=0.2.0
           docker build -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/graalvm:$TAG        
