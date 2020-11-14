@@ -1,32 +1,43 @@
-docker_image: &docker_image
-  docker:
-    - image: docker:19.03.6
-
 slack_image: &slack_image
   docker:
     - image: devatherock/simple-slack:0.4.0
+      auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
 
 work_directory: &work_directory
   working_directory: ~/docker-images
 
 resource_class: &resource_class
   resource_class: small
+  
+executors:
+  docker-executor:
+    docker:
+      - image: docker:19.03.6
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    <<: *resource_class
+    <<: *work_directory
 
 version: 2.1
 jobs:
   dry_run_java_with_docker:
-    <<: *docker_image
-    <<: *resource_class
-    <<: *work_directory
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
       - run: docker build -f java-with-docker/Dockerfile .
+  dry_run_graalvm_with_git:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker build -f graalvm/Dockerfile .
 
   java_with_docker:
-    <<: *docker_image
-    <<: *resource_class
-    <<: *work_directory
+    executor: docker-executor
     steps:
       - checkout
       - setup_remote_docker
@@ -36,7 +47,19 @@ jobs:
           TAG=adoptopenjdk-11
           docker build -t devatherock/java-with-docker:$TAG -f java-with-docker/Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/java-with-docker:$TAG    
+          docker push devatherock/java-with-docker:$TAG
+  graalvm_with_git:
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/docker-images
+      - run: |
+          TAG=20.2.0-java11
+          docker build -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          docker push devatherock/graalvm:$TAG        
 
   notify_success:
     <<: *slack_image
@@ -67,18 +90,40 @@ workflows:
   build_publish:
     jobs:
       - java_with_docker:
+          context:
+            - docker-credentials
+            - slack-webhook
+          filters:
+            branches:
+              only: master
+      - graalvm_with_git:
+          context:
+            - docker-credentials
+            - slack-webhook
           filters:
             branches:
               only: master
       - notify_success:
+          context:
+            - docker-credentials
+            - slack-webhook
           requires:
             - java_with_docker
+            - graalvm_with_git
       - notify_failure:
+          context:
+            - docker-credentials
+            - slack-webhook
           requires:
             - java_with_docker
+            - graalvm_with_git
   pr_check:
     jobs:
       - dry_run_java_with_docker:
+          filters:
+            branches:
+              ignore: master
+      - dry_run_graalvm_with_git:
           filters:
             branches:
               ignore: master
