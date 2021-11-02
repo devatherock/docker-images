@@ -1,5 +1,12 @@
 # Changelog
 
+## 2021-11-02
+### Added
+- `devatherock/nexmo-oas-renderer` to visualize api specs from a git repo
+
+### Changed
+- Base image of graalvm to `ghcr.io/graalvm/graalvm-ce:ol7-java11-20.3.4`
+
 ## 2020-11-14
 ### Added
 - `shasum` to `devatherock/graalvm`
