@@ -88,6 +88,7 @@ jobs:
       - run: |
           TAG=2.4.1-1
           docker build -t devatherock/nexmo-oas-renderer:$TAG nexmo-oas-renderer
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/nexmo-oas-renderer:$TAG
 
   notify:
