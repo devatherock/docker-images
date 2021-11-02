@@ -50,7 +50,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build -f nexmo-oas-renderer/Dockerfile .
+      - run: docker build nexmo-oas-renderer
 
   java_with_docker:
     executor: docker-executor
@@ -73,7 +73,7 @@ jobs:
       - attach_workspace:
           at: ~/docker-images
       - run: |
-          TAG=0.2.0
+          TAG=ol7-java11-20.3.4-1
           docker build -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/graalvm:$TAG
@@ -87,7 +87,7 @@ jobs:
           at: ~/docker-images
       - run: |
           TAG=2.4.1-1
-          docker build -t devatherock/nexmo-oas-renderer:$TAG -f nexmo-oas-renderer/Dockerfile .
+          docker build -t devatherock/nexmo-oas-renderer:$TAG nexmo-oas-renderer
           docker push devatherock/nexmo-oas-renderer:$TAG
 
   notify:

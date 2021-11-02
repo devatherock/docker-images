@@ -1,4 +1,4 @@
-FROM oracle/graalvm-ce:20.2.0-java11
+FROM ghcr.io/graalvm/graalvm-ce:ol7-java11-20.3.4
 
 LABEL maintainer="devatherock@gmail.com"
 
