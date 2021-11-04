@@ -1,5 +1,9 @@
 # Changelog
 
+## 2021-11-04
+### Added
+- [#4](https://github.com/devatherock/docker-images/issues/4) - Rebuilt `devatherock/nexmo-oas-renderer` image using `ruby:2.7.2-slim` base, to reduce image size from 979 MB to 409 MB. Couldn't get the build working with alpine
+
 ## 2021-11-02
 ### Added
 - `devatherock/nexmo-oas-renderer` to visualize api specs from a git repo

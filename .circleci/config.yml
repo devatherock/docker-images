@@ -86,7 +86,7 @@ jobs:
       - attach_workspace:
           at: ~/docker-images
       - run: |
-          TAG=2.4.1-1
+          TAG=2.4.1-2
           docker build -t devatherock/nexmo-oas-renderer:$TAG nexmo-oas-renderer
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/nexmo-oas-renderer:$TAG

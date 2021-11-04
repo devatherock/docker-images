@@ -1,6 +1,10 @@
-FROM nexmodev/nexmo-oas-renderer:v2.4.1
+FROM ruby:2.7.2-slim
 
-RUN apt update && apt install dumb-init
+RUN apt-get update \
+	&& apt-get install dumb-init make gcc git -y
+RUN gem install nexmo-oas-renderer -v 2.4.1
+
+EXPOSE 4567
 
 COPY entry-point.sh /entry-point.sh
 
