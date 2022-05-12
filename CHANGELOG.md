@@ -1,5 +1,9 @@
 # Changelog
 
+## 2022-05-12
+### Changed
+- Base image of graalvm to `ghcr.io/graalvm/native-image:ol8-java11-22.1.0` and installed `tar` in the image
+
 ## 2021-11-04
 ### Added
 - [#4](https://github.com/devatherock/docker-images/issues/4) - Rebuilt `devatherock/nexmo-oas-renderer` image using `ruby:2.7.2-slim` base, to reduce image size from 979 MB to 409 MB. Couldn't get the build working with alpine
