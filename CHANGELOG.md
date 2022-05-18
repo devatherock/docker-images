@@ -1,5 +1,9 @@
 # Changelog
 
+## 2022-05-18
+### Added
+- [#8](https://github.com/devatherock/docker-images/issues/8) - `upx` to graalvm image
+
 ## 2022-05-12
 ### Changed
 - Base image of graalvm to `ghcr.io/graalvm/native-image:ol8-java11-22.1.0` and installed `tar` in the image
