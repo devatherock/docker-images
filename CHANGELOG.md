@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-04-30
+### Changed
+- Base image version of graalvm to `ol8-java17-22.3.2`
+
 ## 2022-05-18
 ### Added
 - [#8](https://github.com/devatherock/docker-images/issues/8) - `upx` to graalvm image
