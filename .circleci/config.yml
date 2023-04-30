@@ -44,7 +44,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build -f graalvm/Dockerfile .
+      - run: docker build --build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .
   dry_run_nexmo_oas_renderer:
     executor: docker-executor
     steps:
@@ -73,8 +73,8 @@ jobs:
       - attach_workspace:
           at: ~/docker-images
       - run: |
-          TAG=ol8-java11-22.1.0-3
-          docker build -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
+          TAG=ol8-java17-22.3.2-1
+          docker build --build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/graalvm:$TAG
           
