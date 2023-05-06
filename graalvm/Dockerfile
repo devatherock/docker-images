@@ -1,4 +1,4 @@
-ARG BASE_IMAGE_VERSION=ol8-java11-22.1.0
+ARG BASE_IMAGE_VERSION=ol8-java17-22.3.2
 FROM ghcr.io/graalvm/native-image:$BASE_IMAGE_VERSION
 
 LABEL maintainer="devatherock@gmail.com"
