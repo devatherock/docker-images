@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-05-06
+### Changed
+- Base image version of graalvm to `ol8-java17-22.1.0`
+
 ## 2023-04-30
 ### Changed
 - Base image version of graalvm to `ol8-java17-22.3.2`
