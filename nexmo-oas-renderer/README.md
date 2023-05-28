@@ -1,7 +1,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/devatherock/nexmo-oas-renderer.svg)](https://hub.docker.com/r/devatherock/nexmo-oas-renderer/)
 [![Docker Image Size](https://img.shields.io/docker/image-size/devatherock/nexmo-oas-renderer.svg?sort=date)](https://hub.docker.com/r/devatherock/nexmo-oas-renderer/)
 # nexmo-oas-renderer
-Customized [nexmo-oas-renderer](https://github.com/Nexmo/nexmo-oas-renderer) image to be able to visualize yaml api specs from a git repo.
+Customized [nexmo-oas-renderer](https://github.com/Nexmo/nexmo-oas-renderer) image that can visualize yaml api specs from a git repo.
 
 ## Usage
 

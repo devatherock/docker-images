@@ -1,5 +1,11 @@
 # Changelog
 
+## 2023-05-28
+### Changed
+- Parameterized CircleCI jobs to avoid duplication
+- Stopped publishing `java-with-docker` image
+- Updated dockerhub readme in CI pipeline
+
 ## 2023-05-06
 ### Changed
 - Base image version of graalvm to `ol8-java17-22.1.0`

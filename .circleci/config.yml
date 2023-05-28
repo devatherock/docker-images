@@ -62,6 +62,27 @@ jobs:
           docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
           docker push devatherock/<< parameters.docker_image >>:$TAG
+          
+  dockerhub_readme:
+    machine:
+      image: ubuntu-2204:2023.04.2
+    parameters:
+      docker_image:
+        type: string
+      image_description:
+        type: string
+      readme_path:
+        type: string
+    steps:
+      - checkout
+      - run: |
+          docker run -v $PWD:/workspace \
+              -e DOCKERHUB_USERNAME \
+              -e DOCKERHUB_PASSWORD \
+              -e DOCKERHUB_REPOSITORY='devatherock/<< parameters.docker_image >>' \
+              -e SHORT_DESCRIPTION='<< parameters.image_description >>' \
+              -e README_FILEPATH='/workspace/<< parameters.readme_path >>' \
+              peterevans/dockerhub-description:3.4.1          
 
   notify:
     <<: *slack_image
@@ -79,15 +100,7 @@ workflows:
   build_publish:
     jobs:
       - publish:
-          name: java_with_docker
-          context:
-            - docker-credentials
-          command_args: '-f java-with-docker/Dockerfile .'
-          docker_image: 'java-with-docker'
-          docker_tag: 'adoptopenjdk-11'
-          <<: *merge_filter
-      - publish:
-          name: graalvm_with_git
+          name: graalvm
           context:
             - docker-credentials
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
@@ -102,25 +115,38 @@ workflows:
           docker_image: 'nexmo-oas-renderer'
           docker_tag: '2.4.1-2'
           <<: *merge_filter
+      - dockerhub_readme:
+          name: dockerhub_readme_graalvm
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          docker_image: 'graalvm'
+          image_description: 'A docker image containing graalvm, native-image, tar, xz, gzip and upx'
+          readme_path: 'graalvm/README.md'
+          requires:
+            - graalvm
+      - dockerhub_readme:
+          name: dockerhub_readme_nexmo_oas_renderer
+          context:
+            - docker-credentials
+            - dockerhub-readme-credentials
+          docker_image: 'nexmo-oas-renderer'
+          image_description: 'Customized nexmo-oas-renderer image that can visualize yaml api specs from a git repo'
+          readme_path: 'nexmo-oas-renderer/README.md'
+          requires:
+            - nexmo_oas_renderer            
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
-            - java_with_docker
-            - graalvm_with_git
-            - nexmo_oas_renderer
+            - dockerhub_readme_graalvm
+            - dockerhub_readme_nexmo_oas_renderer
   
   pr_check:
     jobs:
       - dry_run:
-          name: dry_run_java_with_docker
-          context:
-            - docker-credentials
-          command_args: '-f java-with-docker/Dockerfile .'
-          <<: *pr_filter
-      - dry_run:
-          name: dry_run_graalvm_with_git
+          name: dry_run_graalvm
           context:
             - docker-credentials
           <<: *pr_filter
