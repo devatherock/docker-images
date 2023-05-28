@@ -33,63 +33,35 @@ executors:
 
 version: 2.1
 jobs:
-  dry_run_java_with_docker:
+  dry_run:
     executor: docker-executor
+    parameters:
+      command_args:
+        type: string
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build -f java-with-docker/Dockerfile .
-  dry_run_graalvm_with_git:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run: docker build --build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .
-  dry_run_nexmo_oas_renderer:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run: docker build nexmo-oas-renderer
+      - run: docker build << parameters.command_args >>
 
-  java_with_docker:
+  publish:
     executor: docker-executor
+    parameters:
+      command_args:
+        type: string
+      docker_tag:
+        type: string
+      docker_image:
+        type: string  
     steps:
       - checkout
       - setup_remote_docker
       - attach_workspace:
           at: ~/docker-images
       - run: |
-          TAG=adoptopenjdk-11
-          docker build -t devatherock/java-with-docker:$TAG -f java-with-docker/Dockerfile .
+          TAG=<< parameters.docker_tag >>
+          docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/java-with-docker:$TAG
-          
-  graalvm_with_git:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/docker-images
-      - run: |
-          TAG=ol8-java17-22.1.0-1
-          docker build --build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -t devatherock/graalvm:$TAG -f graalvm/Dockerfile .
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/graalvm:$TAG
-          
-  nexmo_oas_renderer:
-    executor: docker-executor
-    steps:
-      - checkout
-      - setup_remote_docker
-      - attach_workspace:
-          at: ~/docker-images
-      - run: |
-          TAG=2.4.1-2
-          docker build -t devatherock/nexmo-oas-renderer:$TAG nexmo-oas-renderer
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          docker push devatherock/nexmo-oas-renderer:$TAG
+          docker push devatherock/<< parameters.docker_image >>:$TAG
 
   notify:
     <<: *slack_image
@@ -106,17 +78,29 @@ workflows:
   version: 2.1
   build_publish:
     jobs:
-      - java_with_docker:
+      - publish:
+          name: java_with_docker
           context:
             - docker-credentials
+          command_args: '-f java-with-docker/Dockerfile .'
+          docker_image: 'java-with-docker'
+          docker_tag: 'adoptopenjdk-11'
           <<: *merge_filter
-      - graalvm_with_git:
+      - publish:
+          name: graalvm_with_git
           context:
             - docker-credentials
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java17-22.1.0-1'
           <<: *merge_filter
-      - nexmo_oas_renderer:
+      - publish:
+          name: nexmo_oas_renderer
           context:
             - docker-credentials
+          command_args: 'nexmo-oas-renderer'
+          docker_image: 'nexmo-oas-renderer'
+          docker_tag: '2.4.1-2'
           <<: *merge_filter
       - notify:
           context:
@@ -126,17 +110,24 @@ workflows:
             - java_with_docker
             - graalvm_with_git
             - nexmo_oas_renderer
+  
   pr_check:
     jobs:
-      - dry_run_java_with_docker:
+      - dry_run:
+          name: dry_run_java_with_docker
+          context:
+            - docker-credentials
+          command_args: '-f java-with-docker/Dockerfile .'
+          <<: *pr_filter
+      - dry_run:
+          name: dry_run_graalvm_with_git
           context:
             - docker-credentials
           <<: *pr_filter
-      - dry_run_graalvm_with_git:
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
+      - dry_run:
+          name: dry_run_nexmo_oas_renderer
           context:
             - docker-credentials
           <<: *pr_filter
-      - dry_run_nexmo_oas_renderer:
-          context:
-            - docker-credentials
-          <<: *pr_filter
+          command_args: 'nexmo-oas-renderer'
