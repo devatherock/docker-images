@@ -24,7 +24,7 @@ merge_filter: &merge_filter
 executors:
   docker-executor:
     docker:
-      - image: docker:19.03.6
+      - image: cimg/openjdk:17.0
         auth:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
@@ -60,7 +60,7 @@ jobs:
       - run: |
           TAG=<< parameters.docker_tag >>
           docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker push devatherock/<< parameters.docker_image >>:$TAG
           
   dockerhub_readme:
@@ -103,9 +103,9 @@ workflows:
           name: graalvm
           context:
             - docker-credentials
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java17-22.1.0-1'
+          docker_tag: 'ol8-java17-22.3.2-1'
           <<: *merge_filter
       - publish:
           name: nexmo_oas_renderer
@@ -150,7 +150,7 @@ workflows:
           context:
             - docker-credentials
           <<: *pr_filter
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
       - dry_run:
           name: dry_run_nexmo_oas_renderer
           context:
