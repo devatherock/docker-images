@@ -1,5 +1,11 @@
 # Changelog
 
+## 2023-06-03
+### Changed
+- Base image version of graalvm to `ol8-java17-22.3.2`
+- Docker executor to `cimg/openjdk:17.0`
+- Docker login to use `--password-stdin`
+
 ## 2023-05-28
 ### Changed
 - Parameterized CircleCI jobs to avoid duplication
