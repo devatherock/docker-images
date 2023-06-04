@@ -41,7 +41,12 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: docker build << parameters.command_args >>
+      - run: |
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            << parameters.command_args >>
 
   publish:
     executor: docker-executor
