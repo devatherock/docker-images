@@ -6,6 +6,7 @@
 - Docker executor to `cimg/openjdk:17.0`
 - Docker login to use `--password-stdin`
 - [#15](https://github.com/devatherock/docker-images/issues/15): Built multi-arch docker images
+- Created separate image for each architecture
 
 ## 2023-05-28
 ### Changed
