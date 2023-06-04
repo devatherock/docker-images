@@ -30,6 +30,11 @@ executors:
           password: $DOCKER_PASSWORD
     <<: *resource_class
     <<: *work_directory
+  arm-executor:
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    <<: *work_directory
 
 version: 2.1
 jobs:
@@ -41,12 +46,16 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: |
-          docker buildx create --name rockbuilder \
-            --driver docker-container --use --bootstrap
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            << parameters.command_args >>
+      - run: docker build << parameters.command_args >>
+      
+  dry_run_arm:
+    executor: arm-executor
+    parameters:
+      command_args:
+        type: string
+    steps:
+      - checkout
+      - run: docker build << parameters.command_args >>      
 
   publish:
     executor: docker-executor
@@ -65,13 +74,27 @@ jobs:
       - run: |
           TAG=<< parameters.docker_tag >>
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker buildx create --name rockbuilder \
-            --driver docker-container --use --bootstrap
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            --push \
-            -t devatherock/<< parameters.docker_image >>:$TAG \
-            << parameters.command_args >>
+          docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
+          docker push devatherock/<< parameters.docker_image >>:$TAG
+          
+  publish_arm:
+    executor: arm-executor
+    parameters:
+      command_args:
+        type: string
+      docker_tag:
+        type: string
+      docker_image:
+        type: string  
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/docker-images
+      - run: |
+          TAG=<< parameters.docker_tag >>
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
+          docker push devatherock/<< parameters.docker_image >>:$TAG          
           
   dockerhub_readme:
     machine:
@@ -125,6 +148,22 @@ workflows:
           docker_image: 'nexmo-oas-renderer'
           docker_tag: '2.4.1-2'
           <<: *merge_filter
+      - publish_arm:
+          name: graalvm_arm
+          context:
+            - docker-credentials
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java17-22.3.2-1-arm64'
+          <<: *merge_filter
+      - publish_arm:
+          name: nexmo_oas_renderer_arm
+          context:
+            - docker-credentials
+          command_args: 'nexmo-oas-renderer'
+          docker_image: 'nexmo-oas-renderer'
+          docker_tag: '2.4.1-2-arm64'
+          <<: *merge_filter
       - dockerhub_readme:
           name: dockerhub_readme_graalvm
           context:
@@ -134,7 +173,7 @@ workflows:
           image_description: 'A docker image containing graalvm, native-image, tar, xz, gzip and upx'
           readme_path: 'graalvm/README.md'
           requires:
-            - graalvm
+            - graalvm_arm
       - dockerhub_readme:
           name: dockerhub_readme_nexmo_oas_renderer
           context:
@@ -144,12 +183,14 @@ workflows:
           image_description: 'Customized nexmo-oas-renderer image that can visualize yaml api specs from a git repo'
           readme_path: 'nexmo-oas-renderer/README.md'
           requires:
-            - nexmo_oas_renderer            
+            - nexmo_oas_renderer_arm
       - notify:
           context:
             - docker-credentials
             - slack-webhook
           requires:
+            - nexmo_oas_renderer
+            - graalvm
             - dockerhub_readme_graalvm
             - dockerhub_readme_nexmo_oas_renderer
   
@@ -163,6 +204,18 @@ workflows:
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
       - dry_run:
           name: dry_run_nexmo_oas_renderer
+          context:
+            - docker-credentials
+          <<: *pr_filter
+          command_args: 'nexmo-oas-renderer'
+      - dry_run_arm:
+          name: dry_run_graalvm_arm
+          context:
+            - docker-credentials
+          <<: *pr_filter
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
+      - dry_run_arm:
+          name: dry_run_nexmo_oas_renderer_arm
           context:
             - docker-credentials
           <<: *pr_filter
