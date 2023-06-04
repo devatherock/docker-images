@@ -5,6 +5,7 @@
 - Base image version of graalvm to `ol8-java17-22.3.2`
 - Docker executor to `cimg/openjdk:17.0`
 - Docker login to use `--password-stdin`
+- [#15](https://github.com/devatherock/docker-images/issues/15): Built multi-arch docker images
 
 ## 2023-05-28
 ### Changed

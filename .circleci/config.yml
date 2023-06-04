@@ -59,9 +59,14 @@ jobs:
           at: ~/docker-images
       - run: |
           TAG=<< parameters.docker_tag >>
-          docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-          docker push devatherock/<< parameters.docker_image >>:$TAG
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t devatherock/<< parameters.docker_image >>:$TAG \
+            << parameters.command_args >>
           
   dockerhub_readme:
     machine:
