@@ -52,6 +52,20 @@ jobs:
       - << parameters.init_command >>
       - run: docker build << parameters.command_args >>
 
+  dry_run_multiarch:
+    parameters:
+      command_args:
+        type: string
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: |
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 << parameters.command_args >>
+
   publish:
     parameters:
       command_args:
@@ -74,7 +88,32 @@ jobs:
           TAG=<< parameters.docker_tag >>
           echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker build -t devatherock/<< parameters.docker_image >>:$TAG << parameters.command_args >>
-          docker push devatherock/<< parameters.docker_image >>:$TAG      
+          docker push devatherock/<< parameters.docker_image >>:$TAG
+
+  publish_multiarch:
+    parameters:
+      command_args:
+        type: string
+      docker_tag:
+        type: string
+      docker_image:
+        type: string
+    executor: docker-executor
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: ~/docker-images
+      - run: |
+          TAG=<< parameters.docker_tag >>
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
+          docker buildx create --name rockbuilder \
+            --driver docker-container --use --bootstrap
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --push \
+            -t devatherock/<< parameters.docker_image >>:$TAG \
+            << parameters.command_args >>
           
   dockerhub_readme:
     machine:
@@ -113,15 +152,29 @@ workflows:
   version: 2.1
   build_publish:
     jobs:
-      - publish:
-          name: graalvm
+      - publish_multiarch:
+          name: graalvm_java17
           context:
             - docker-credentials
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java17-22.3.2-1'
-          runner: docker-executor
-          init_command: 'setup_remote_docker'
+          docker_tag: 'ol8-java17-22.3.2-2'
+          <<: *merge_filter
+      - publish_multiarch:
+          name: graalvm_java11
+          context:
+            - docker-credentials
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java11-22.3.2 -f graalvm/Dockerfile .'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java11-22.3.2-1'
+          <<: *merge_filter
+      - publish_multiarch:
+          name: graalvm_22_1
+          context:
+            - docker-credentials
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java17-22.1.0-2'
           <<: *merge_filter
       - publish:
           name: nexmo_oas_renderer
@@ -132,16 +185,6 @@ workflows:
           docker_tag: '2.4.1-2'
           runner: docker-executor
           init_command: 'setup_remote_docker'
-          <<: *merge_filter
-      - publish:
-          name: graalvm_arm
-          context:
-            - docker-credentials
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
-          docker_image: 'graalvm'
-          docker_tag: 'ol8-java17-22.3.2-1-arm64'
-          runner: arm-executor
-          init_command: 'checkout'
           <<: *merge_filter
       - publish:
           name: nexmo_oas_renderer_arm
@@ -162,7 +205,7 @@ workflows:
           image_description: 'A docker image containing graalvm, native-image, tar, xz, gzip and upx'
           readme_path: 'graalvm/README.md'
           requires:
-            - graalvm_arm
+            - graalvm_22_1
       - dockerhub_readme:
           name: dockerhub_readme_nexmo_oas_renderer
           context:
@@ -179,20 +222,31 @@ workflows:
             - slack-webhook
           requires:
             - nexmo_oas_renderer
-            - graalvm
+            - graalvm_java17
+            - graalvm_java11
             - dockerhub_readme_graalvm
             - dockerhub_readme_nexmo_oas_renderer
   
   pr_check:
     jobs:
-      - dry_run:
-          name: dry_run_graalvm
+      - dry_run_multiarch:
+          name: dry_run_graalvm_java17
           context:
             - docker-credentials
           <<: *pr_filter
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
-          runner: docker-executor
-          init_command: 'setup_remote_docker'
+      - dry_run_multiarch:
+          name: dry_run_graalvm_java11
+          context:
+            - docker-credentials
+          <<: *pr_filter
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java11-22.3.2 -f graalvm/Dockerfile .'
+      - dry_run_multiarch:
+          name: dry_run_graalvm_22_1
+          context:
+            - docker-credentials
+          <<: *pr_filter
+          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'                    
       - dry_run:
           name: dry_run_nexmo_oas_renderer
           context:
@@ -201,14 +255,6 @@ workflows:
           command_args: 'nexmo-oas-renderer'
           runner: docker-executor
           init_command: 'setup_remote_docker'
-      - dry_run:
-          name: dry_run_graalvm_arm
-          context:
-            - docker-credentials
-          <<: *pr_filter
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
-          runner: arm-executor
-          init_command: 'checkout'
       - dry_run:
           name: dry_run_nexmo_oas_renderer_arm
           context:
