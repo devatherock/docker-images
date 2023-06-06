@@ -6,7 +6,13 @@ LABEL maintainer="devatherock@gmail.com"
 RUN microdnf -y install tar \
   && microdnf -y install gzip \
   && microdnf -y install xz \
-  && microdnf clean all \
-  && curl --location --output upx-3.96-amd64_linux.tar.xz "https://github.com/upx/upx/releases/download/v3.96/upx-3.96-amd64_linux.tar.xz" \
-	&& tar -xJf upx-3.96-amd64_linux.tar.xz \
-	&& cp upx-3.96-amd64_linux/upx /bin/
+  && microdnf clean all
+
+ARG UPX_VERSION=3.96  
+RUN case ${TARGETPLATFORM:-linux/amd64} in \
+        "linux/arm64")   UPX_ARCH="arm64" ;; \
+        *)               UPX_ARCH="amd64" ;; \
+    esac; \
+    curl --location --output upx_linux.tar.xz "https://github.com/upx/upx/releases/download/v${UPX_VERSION}/upx-${UPX_VERSION}-${UPX_ARCH}_linux.tar.xz"; \
+	tar -xJf upx_linux.tar.xz; \
+	cp upx-${UPX_VERSION}-${UPX_ARCH}_linux/upx /bin/
