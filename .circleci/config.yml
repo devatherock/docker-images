@@ -141,7 +141,7 @@ jobs:
     executor: arm-executor
     steps:
       - run: |
-          docker run --rm --entrypoint='' devatherock/graalvm:temp uname -m && upx
+          docker run --rm --entrypoint='' devatherock/graalvm:temp sh -c "uname -m && upx"
           
   test_upx:
     machine:
@@ -149,7 +149,7 @@ jobs:
       resource_class: medium
     steps:
       - run: |
-          docker run --rm --entrypoint='' devatherock/graalvm:temp uname -m && upx          
+          docker run --rm --entrypoint='' devatherock/graalvm:temp sh -c "uname -m && upx"
 
   notify:
     <<: *slack_image
