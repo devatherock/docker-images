@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-06-06
+### Changed
+- Created 3 different multiarch images for graalvm
+
 ## 2023-06-03
 ### Changed
 - Base image version of graalvm to `ol8-java17-22.3.2`
