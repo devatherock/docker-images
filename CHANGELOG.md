@@ -3,6 +3,7 @@
 ## 2023-06-06
 ### Changed
 - Created 3 different multiarch images for graalvm
+- Installed architecture specific version of `upx`
 
 ## 2023-06-03
 ### Changed

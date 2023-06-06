@@ -3,4 +3,5 @@
 # graalvm
 A docker image containing graalvm, native-image, tar, xz, gzip and upx. 
   - `gzip` and `tar` are needed for [CircleCI](https://circleci.com/docs/custom-images/#required-tools-for-primary-containers). 
+  - `xz` is needed for installing `upx`
   - `upx` is needed for [java-to-native](https://github.com/devatherock/java-to-native)
