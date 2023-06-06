@@ -3,11 +3,6 @@ FROM ghcr.io/graalvm/native-image:$BASE_IMAGE_VERSION
 
 LABEL maintainer="devatherock@gmail.com"
 
-RUN microdnf -y install tar \
-  && microdnf -y install gzip \
-  && microdnf -y install xz \
-  && microdnf clean all
-
 ARG UPX_VERSION=3.96
 ARG TARGETPLATFORM
 
