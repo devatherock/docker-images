@@ -275,37 +275,23 @@ workflows:
   
   pr_check:
     jobs:
-      - dry_run_multiarch:
-          name: dry_run_graalvm_java17
+      - test:
+          name: test_graalvm_java11_amd
           context:
             - docker-credentials
-          <<: *pr_filter
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
-      - dry_run_multiarch:
-          name: dry_run_graalvm_java11
-          context:
-            - docker-credentials
-          <<: *pr_filter
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java11-22.3.2 -f graalvm/Dockerfile .'
-      - dry_run_multiarch:
-          name: dry_run_graalvm_22_1
-          context:
-            - docker-credentials
-          <<: *pr_filter
-          command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'                    
-      - dry_run:
-          name: dry_run_nexmo_oas_renderer
-          context:
-            - docker-credentials
-          <<: *pr_filter
-          command_args: 'nexmo-oas-renderer'
+          command_args: 'sh -c "uname -m && upx -V"'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java11-22.3.2-3'
           runner: docker-executor
           init_command: 'setup_remote_docker'
-      - dry_run:
-          name: dry_run_nexmo_oas_renderer_arm
+          <<: *pr_filter
+      - test:
+          name: test_graalvm_java11_arm
           context:
             - docker-credentials
-          <<: *pr_filter
-          command_args: 'nexmo-oas-renderer'
+          command_args: 'sh -c "uname -m && upx -V"'
+          docker_image: 'graalvm'
+          docker_tag: 'ol8-java11-22.3.2-3'
           runner: arm-executor
           init_command: 'checkout'
+          <<: *pr_filter
