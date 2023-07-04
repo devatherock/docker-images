@@ -6,6 +6,7 @@ LABEL maintainer="devatherock@gmail.com"
 RUN microdnf -y install tar \
   && microdnf -y install gzip \
   && microdnf -y install xz \
+  && microdnf -y install findutils \
   && microdnf clean all
 
 ARG UPX_VERSION=3.96
