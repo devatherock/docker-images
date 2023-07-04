@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-07-04
+### Added
+- `xargs` to graalvm as latest versions of gradle require it
+
 ## 2023-06-06
 ### Changed
 - Created 3 different multiarch images for graalvm
