@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-07-06
+### Changed
+- Reduced `resource_class` used for dockerhub readme updates
+
 ## 2023-07-04
 ### Added
 - `xargs` to graalvm as latest versions of gradle require it
