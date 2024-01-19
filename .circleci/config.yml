@@ -184,7 +184,7 @@ workflows:
             - docker-credentials
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.3.2 -f graalvm/Dockerfile .'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java17-22.3.2-5'
+          docker_tag: 'ol8-java17-22.3.2-6'
           <<: *merge_filter
       - publish_multiarch:
           name: graalvm_java11
@@ -192,7 +192,7 @@ workflows:
             - docker-credentials
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java11-22.3.2 -f graalvm/Dockerfile .'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java11-22.3.2-4'
+          docker_tag: 'ol8-java11-22.3.2-5'
           <<: *merge_filter
       - publish_multiarch:
           name: graalvm_22_1
@@ -200,7 +200,7 @@ workflows:
             - docker-credentials
           command_args: '--build-arg BASE_IMAGE_VERSION=ol8-java17-22.1.0 -f graalvm/Dockerfile .'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java17-22.1.0-5'
+          docker_tag: 'ol8-java17-22.1.0-6'
           <<: *merge_filter
       - publish:
           name: nexmo_oas_renderer
@@ -248,7 +248,7 @@ workflows:
             - docker-credentials
           command_args: 'sh -c "uname -m && upx -V"'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java11-22.3.2-3'
+          docker_tag: 'ol8-java11-22.3.2-5'
           runner: docker-executor
           init_command: 'setup_remote_docker'
           requires:
@@ -259,7 +259,7 @@ workflows:
             - docker-credentials
           command_args: 'sh -c "uname -m && upx -V"'
           docker_image: 'graalvm'
-          docker_tag: 'ol8-java11-22.3.2-3'
+          docker_tag: 'ol8-java11-22.3.2-5'
           runner: arm-executor
           init_command: 'checkout'
           requires:
