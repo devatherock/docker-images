@@ -1,5 +1,9 @@
 # Changelog
 
+## 2024-01-20
+### Changed
+- Built a graalvm image using the `native-image-community` base image
+
 ## 2024-01-19
 ### Added
 - Docker cli and `make` to graalvm image
