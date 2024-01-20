@@ -1,5 +1,12 @@
 # Changelog
 
+## 2024-01-19
+### Added
+- Docker cli and `make` to graalvm image
+
+### Changed
+- Upgraded ruby and nexmo-oas-renderer version in `nexmo-oas-renderer` image
+
 ## 2023-07-06
 ### Changed
 - Reduced `resource_class` used for dockerhub readme updates
