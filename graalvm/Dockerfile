@@ -11,7 +11,8 @@ RUN microdnf -y install tar \
   && microdnf clean all
 
 RUN curl -o /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo \
-  && microdnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  && microdnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
+  && microdnf clean all
 
 ARG UPX_VERSION=3.96
 ARG TARGETPLATFORM
