@@ -1,5 +1,6 @@
+ARG BASE_IMAGE=native-image
 ARG BASE_IMAGE_VERSION=ol8-java17-22.3.2
-FROM ghcr.io/graalvm/native-image:$BASE_IMAGE_VERSION
+FROM ghcr.io/graalvm/$BASE_IMAGE:$BASE_IMAGE_VERSION
 
 LABEL maintainer="devatherock@gmail.com"
 
