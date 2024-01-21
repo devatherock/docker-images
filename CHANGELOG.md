@@ -1,5 +1,9 @@
 # Changelog
 
+## 2024-01-21
+### Changed
+- `17-ol8` graalvm image to `21-ol8`
+
 ## 2024-01-20
 ### Changed
 - Built a graalvm image using the `native-image-community` base image
